@@ -2,105 +2,116 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>DeepSeek Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>W.E.D.I Chat</title>
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
+      padding: 0;
       background-color: #121212;
+      font-family: Arial, sans-serif;
       color: white;
       display: flex;
       flex-direction: column;
-      align-items: center;
-    }
-
-    .container {
-      max-width: 600px;
-      width: 100%;
-      padding: 20px;
+      height: 100vh;
     }
 
     .header {
       text-align: center;
-      margin-top: 30px;
+      padding: 20px 10px 10px;
+      background-color: #1e1e1e;
+      border-bottom: 1px solid #333;
     }
 
-    .avatar {
-      width: 100px;
-      height: 100px;
+    .header img {
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       object-fit: cover;
     }
 
-    .title {
-      font-size: 1.5em;
+    .header .title {
       margin-top: 10px;
+      font-size: 1.3em;
+      font-weight: bold;
     }
 
     .chat-box {
-      margin-top: 20px;
-      height: 400px;
+      flex: 1;
       overflow-y: auto;
-      background-color: #1e1e1e;
       padding: 10px;
-      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-color: #121212;
     }
 
     .message {
-      margin-bottom: 10px;
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      word-wrap: break-word;
     }
 
     .user {
-      text-align: right;
-      color: #90caf9;
+      align-self: flex-end;
+      background-color: #1976d2;
+      color: white;
+      border-bottom-right-radius: 0;
     }
 
     .bot {
-      text-align: left;
-      color: #a5d6a7;
+      align-self: flex-start;
+      background-color: #2e7d32;
+      color: white;
+      border-bottom-left-radius: 0;
     }
 
     .input-area {
-      margin-top: 15px;
       display: flex;
-      gap: 10px;
+      padding: 10px;
+      background-color: #1e1e1e;
+      border-top: 1px solid #333;
     }
 
-    input[type="text"] {
+    .input-area input[type="text"] {
       flex: 1;
       padding: 10px;
-      border: none;
-      border-radius: 5px;
       font-size: 1em;
+      border-radius: 20px;
+      border: none;
+      background-color: #2a2a2a;
+      color: white;
+      outline: none;
     }
 
-    button {
+    .input-area button {
+      margin-left: 10px;
       padding: 10px 20px;
-      background-color: #1976d2;
+      font-size: 1em;
       border: none;
+      border-radius: 20px;
+      background-color: #1976d2;
       color: white;
-      border-radius: 5px;
       cursor: pointer;
     }
 
-    button:hover {
+    .input-area button:hover {
       background-color: #1565c0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <img src="{{ url_for('static', filename='profil.jpg') }}" alt="Avatar" class="avatar">
-      <div class="title">Apa yang bisa saya bantu?</div>
-    </div>
+  <div class="header">
+    <img src="/static/profil.jpg" alt="Avatar">
+    <div class="title">Apa yang bisa saya bantu?</div>
+  </div>
 
-    <div class="chat-box" id="chat-box"></div>
+  <div class="chat-box" id="chat-box"></div>
 
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Tanyakan apa saja">
-      <button onclick="sendMessage()">Kirim</button>
-    </div>
+  <div class="input-area">
+    <input type="text" id="user-input" placeholder="Tanyakan apa saja">
+    <button onclick="sendMessage()">Kirim</button>
   </div>
 
   <script>
@@ -119,7 +130,7 @@
       });
 
       const data = await response.json();
-      appendMessage("bot", data.response || "Tidak ada jawaban.");
+      appendMessage("bot", data.response || "Maaf, tidak ada balasan.");
     }
 
     function appendMessage(sender, text) {
