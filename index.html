@@ -5,45 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>W.E.D.I Chat</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
-      background-color: #121212;
+      background-color: #ffffff;
       font-family: Arial, sans-serif;
-      color: white;
+      color: #000;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
-    .header {
-      text-align: center;
-      padding: 20px 10px 10px;
-      background-color: #1e1e1e;
-      border-bottom: 1px solid #333;
+    .top-bar {
+      background-color: #fff;
+      padding: 10px 15px;
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
     }
 
-    .header img {
-      width: 80px;
-      height: 80px;
+    .intro {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .intro img {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       object-fit: cover;
-    }
-
-    .header .title {
-      margin-top: 10px;
-      font-size: 1.3em;
-      font-weight: bold;
+      margin-bottom: 15px;
     }
 
     .chat-box {
+      display: none;
       flex: 1;
       overflow-y: auto;
       padding: 10px;
+      background-color: #f9f9f9;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      background-color: #121212;
     }
 
     .message {
@@ -62,7 +72,7 @@
 
     .bot {
       align-self: flex-start;
-      background-color: #2e7d32;
+      background-color: #4caf50;
       color: white;
       border-bottom-left-radius: 0;
     }
@@ -70,8 +80,8 @@
     .input-area {
       display: flex;
       padding: 10px;
-      background-color: #1e1e1e;
-      border-top: 1px solid #333;
+      border-top: 1px solid #ccc;
+      background-color: #fff;
     }
 
     .input-area input[type="text"] {
@@ -79,9 +89,7 @@
       padding: 10px;
       font-size: 1em;
       border-radius: 20px;
-      border: none;
-      background-color: #2a2a2a;
-      color: white;
+      border: 1px solid #ccc;
       outline: none;
     }
 
@@ -102,15 +110,17 @@
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="/static/profil.jpg" alt="Avatar">
-    <div class="title">Apa yang bisa saya bantu?</div>
+  <div class="top-bar">W.E.D.I</div>
+
+  <div class="intro" id="intro">
+    <img src="/static/avatar.jpg" alt="Avatar">
+    <h2>Apa yang bisa saya bantu?</h2>
   </div>
 
   <div class="chat-box" id="chat-box"></div>
 
   <div class="input-area">
-    <input type="text" id="user-input" placeholder="Tanyakan apa saja">
+    <input type="text" id="user-input" placeholder="Tanyakan apa saja" onkeydown="if(event.key==='Enter') sendMessage()">
     <button onclick="sendMessage()">Kirim</button>
   </div>
 
@@ -119,6 +129,9 @@
       const input = document.getElementById("user-input");
       const message = input.value.trim();
       if (!message) return;
+
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("chat-box").style.display = "flex";
 
       appendMessage("user", message);
       input.value = "";
