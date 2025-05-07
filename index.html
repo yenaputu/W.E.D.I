@@ -7,15 +7,15 @@
   <style>
     body {
       margin: 0;
-      background-color: white;
       font-family: Arial, sans-serif;
+      background: white;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
     header {
-      padding: 10px 20px;
+      padding: 15px 20px;
       font-weight: bold;
       font-size: 1.2em;
       position: fixed;
@@ -42,14 +42,40 @@
       font-weight: bold;
     }
 
-    #chat-container {
-      margin-top: auto;
-      padding: 20px;
+    #chatbot {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 100px 20px 20px;
+    }
+
+    #messages {
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      max-width: 70%;
+    }
+
+    .user {
+      background-color: #e0f7fa;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background-color: #f0f0f0;
+      align-self: flex-start;
     }
 
     #chat-input {
-      width: 100%;
       padding: 10px;
+      width: 100%;
       font-size: 1em;
     }
   </style>
@@ -62,13 +88,14 @@
     <div id="intro-text">mesiliha pipis nanging sing nganake</div>
   </div>
 
-  <div id="chat-container">
+  <div id="chatbot">
+    <div id="messages"></div>
     <input type="text" id="chat-input" placeholder="Ketik sesuatu...">
-    <!-- Tambahkan UI chat lainnya di sini -->
   </div>
 
   <script>
     const input = document.getElementById('chat-input');
+    const messages = document.getElementById('messages');
     const intro = document.getElementById('intro');
 
     input.addEventListener('input', () => {
@@ -78,6 +105,28 @@
         intro.style.opacity = "1";
       }
     });
+
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && input.value.trim() !== "") {
+        const userMessage = input.value;
+        appendMessage(userMessage, 'user');
+        input.value = "";
+
+        // Simulasi balasan chatbot (ganti ini jika mau pakai AI API)
+        setTimeout(() => {
+          const botReply = "Aku bot W.E.D.I. Ada yang bisa kubantu?";
+          appendMessage(botReply, 'bot');
+        }, 600);
+      }
+    });
+
+    function appendMessage(text, type) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + type;
+      msg.innerText = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
   </script>
 </body>
 </html>
