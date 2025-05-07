@@ -1,32 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>W.E.D.I</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fdfdfd;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
     header {
-      padding: 15px 20px;
-      font-weight: bold;
-      font-size: 1.2em;
       position: fixed;
       top: 0;
       left: 0;
+      padding: 16px 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+      background-color: transparent;
       z-index: 10;
     }
 
     #intro {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      margin-top: 100px;
+      margin-top: 80px;
       transition: opacity 0.5s ease;
     }
 
@@ -34,49 +43,71 @@
       width: 120px;
       height: 120px;
       border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       margin-bottom: 20px;
     }
 
     #intro-text {
-      font-size: 1.5em;
+      font-size: 1.4em;
       font-weight: bold;
+      max-width: 80%;
+      margin-bottom: 30px;
     }
 
     #chatbot {
-      flex: 1;
       display: flex;
       flex-direction: column;
+      flex: 1;
       justify-content: flex-end;
-      padding: 100px 20px 20px;
+      padding: 20px;
+      padding-top: 150px;
     }
 
     #messages {
+      flex: 1;
       overflow-y: auto;
-      flex-grow: 1;
       margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .message {
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
+      padding: 12px 16px;
+      border-radius: 20px;
       max-width: 70%;
+      word-wrap: break-word;
+      font-size: 0.95em;
     }
 
     .user {
-      background-color: #e0f7fa;
+      background-color: #d1f5ff;
       align-self: flex-end;
     }
 
     .bot {
-      background-color: #f0f0f0;
+      background-color: #eeeeee;
       align-self: flex-start;
     }
 
     #chat-input {
-      padding: 10px;
-      width: 100%;
+      padding: 12px 14px;
       font-size: 1em;
+      width: 100%;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    @media screen and (max-width: 500px) {
+      #intro-text {
+        font-size: 1.2em;
+      }
+
+      #chat-input {
+        font-size: 0.95em;
+      }
     }
   </style>
 </head>
@@ -101,8 +132,10 @@
     input.addEventListener('input', () => {
       if (input.value.trim() !== "") {
         intro.style.opacity = "0";
+        intro.style.pointerEvents = "none";
       } else {
         intro.style.opacity = "1";
+        intro.style.pointerEvents = "auto";
       }
     });
 
@@ -112,7 +145,7 @@
         appendMessage(userMessage, 'user');
         input.value = "";
 
-        // Simulasi balasan chatbot (ganti ini jika mau pakai AI API)
+        // Simulasi balasan chatbot
         setTimeout(() => {
           const botReply = "Aku bot W.E.D.I. Ada yang bisa kubantu?";
           appendMessage(botReply, 'bot');
