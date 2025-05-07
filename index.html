@@ -1,74 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>W.E.D.I</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       background-color: white;
       font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     header {
-      background-color: white;
-      padding: 1em;
-      text-align: center;
+      padding: 10px 20px;
       font-weight: bold;
-      font-size: 1.5em;
+      font-size: 1.2em;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
     }
 
-    #intro-container {
+    #intro {
       text-align: center;
       margin-top: 100px;
+      transition: opacity 0.5s ease;
     }
 
     #avatar {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       margin-bottom: 20px;
     }
 
     #intro-text {
-      font-weight: bold;
       font-size: 1.5em;
+      font-weight: bold;
     }
 
     #chat-container {
-      display: none;
+      margin-top: auto;
       padding: 20px;
-      text-align: center;
     }
 
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
+    #chat-input {
+      width: 100%;
+      padding: 10px;
       font-size: 1em;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <header>W.E.D.I</header>
 
-  <div id="intro-container">
+  <div id="intro">
     <img id="avatar" src="avatar.jpg" alt="Avatar">
-    <p id="intro-text">mesiliha pipis nanging sing nganake</p>
-    <button onclick="startChat()">Mulai Percakapan</button>
+    <div id="intro-text">mesiliha pipis nanging sing nganake</div>
   </div>
 
   <div id="chat-container">
-    <!-- Komponen chat kamu akan diletakkan di sini -->
-    <p>Percakapan dimulai...</p>
+    <input type="text" id="chat-input" placeholder="Ketik sesuatu...">
+    <!-- Tambahkan UI chat lainnya di sini -->
   </div>
 
   <script>
-    function startChat() {
-      document.getElementById('intro-container').style.display = 'none';
-      document.getElementById('chat-container').style.display = 'block';
-    }
+    const input = document.getElementById('chat-input');
+    const intro = document.getElementById('intro');
+
+    input.addEventListener('input', () => {
+      if (input.value.trim() !== "") {
+        intro.style.opacity = "0";
+      } else {
+        intro.style.opacity = "1";
+      }
+    });
   </script>
 </body>
 </html>
