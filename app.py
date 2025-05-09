@@ -1,28 +1,37 @@
-from flask import Flask, render_template, request, jsonify
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+from flask import Flask, request, render_template, jsonify import subprocess
 
-app = Flask(__name__)
+app = Flask(name)
 
-# Load model dan tokenizer DeepSeek
-model_id = "deepseek-ai/DeepSeek-V3"
-tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True)
+@app.route("/") def home(): return render_template("index.html")
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+@app.route("/ask", methods=["POST"]) def ask(): user_input = request.json.get("message") # Di sini kamu bisa ganti dengan pemanggilan model llama response = subprocess.getoutput(f"llama run --prompt "{user_input}"") return jsonify({"response": response})
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    user_message = data.get("message", "")
+if name == "main": app.run(debug=True)
 
-    inputs = tokenizer(user_message, return_tensors="pt")
-    outputs = model.generate(**inputs, max_length=256, pad_token_id=tokenizer.eos_token_id)
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+templates/index.html
 
-    return jsonify({"response": response.strip()})
+<!DOCTYPE html><html>
+<head>
+    <title>LLaMA Chatbot</title>
+    <script>
+        async function sendMessage() {
+            const msg = document.getElementById("message").value;
+            const res = await fetch("/ask", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: msg})
+            });
+            const data = await res.json();
+            document.getElementById("chat").innerHTML += `<div><b>You:</b> ${msg}</div><div><b>Bot:</b> ${data.response}</div>`;
+        }
+    </script>
+</head>
+<body>
+    <h1>LLaMA Chatbot</h1>
+    <input id="message" type="text" placeholder="Tanya sesuatu...">
+    <button onclick="sendMessage()">Kirim</button>
+    <div id="chat"></div>
+</body>
+</html>static/style.css (Opsional CSS)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+body { font-family: Arial, sans-serif; margin: 20px; }
