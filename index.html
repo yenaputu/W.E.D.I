@@ -124,42 +124,51 @@
     <input type="text" id="chat-input" placeholder="Ketik sesuatu...">
   </div>
 
-  <script>
-    const input = document.getElementById('chat-input');
-    const messages = document.getElementById('messages');
-    const intro = document.getElementById('intro');
+ <script>
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('messages');
+  const intro = document.getElementById('intro');
 
-    input.addEventListener('input', () => {
-      if (input.value.trim() !== "") {
-        intro.style.opacity = "0";
-        intro.style.pointerEvents = "none";
-      } else {
-        intro.style.opacity = "1";
-        intro.style.pointerEvents = "auto";
-      }
-    });
-
-    input.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter' && input.value.trim() !== "") {
-        const userMessage = input.value;
-        appendMessage(userMessage, 'user');
-        input.value = "";
-
-        // Simulasi balasan chatbot
-        setTimeout(() => {
-          const botReply = "Aku bot W.E.D.I. Ada yang bisa kubantu?";
-          appendMessage(botReply, 'bot');
-        }, 600);
-      }
-    });
-
-    function appendMessage(text, type) {
-      const msg = document.createElement('div');
-      msg.className = 'message ' + type;
-      msg.innerText = text;
-      messages.appendChild(msg);
-      messages.scrollTop = messages.scrollHeight;
+  input.addEventListener('input', () => {
+    if (input.value.trim() !== "") {
+      intro.style.opacity = "0";
+      intro.style.pointerEvents = "none";
+    } else {
+      intro.style.opacity = "1";
+      intro.style.pointerEvents = "auto";
     }
-  </script>
-</body>
-</html>
+  });
+
+  input.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter' && input.value.trim() !== "") {
+      const userMessage = input.value;
+      appendMessage(userMessage, 'user');
+      input.value = "";
+
+      fetch('http://localhost:5000/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userMessage })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const botReply = data.reply || "Maaf, terjadi kesalahan.";
+        appendMessage(botReply, 'bot');
+      })
+      .catch(err => {
+        console.error(err);
+        appendMessage("Terjadi kesalahan koneksi ke server.", 'bot');
+      });
+    }
+  });
+
+  function appendMessage(text, type) {
+    const msg = document.createElement('div');
+    msg.className = 'message ' + type;
+    msg.innerText = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+</script>
