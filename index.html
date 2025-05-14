@@ -13,20 +13,33 @@
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #fdfdfd;
+      color: #000;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     header {
       position: fixed;
       top: 0;
       left: 0;
+      width: 100%;
       padding: 16px 20px;
       font-weight: bold;
       font-size: 1.2em;
-      background-color: transparent;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e0e0e0;
       z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header img {
+      height: 24px;
+      margin-right: 10px;
     }
 
     #intro {
@@ -35,7 +48,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      margin-top: 80px;
+      margin-top: 100px;
       transition: opacity 0.5s ease;
     }
 
@@ -100,6 +113,49 @@
       outline: none;
     }
 
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    #clear-chat {
+      background-color: #ffdddd;
+      color: #333;
+    }
+
+    #theme-toggle {
+      background-color: #ddddff;
+      color: #333;
+    }
+
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    body.dark-mode .message.user {
+      background-color: #3a3a3a;
+    }
+
+    body.dark-mode .message.bot {
+      background-color: #2a2a2a;
+    }
+
+    body.dark-mode #chat-input {
+      background-color: #2a2a2a;
+      color: #fff;
+      border: 1px solid #555;
+    }
+
     @media screen and (max-width: 500px) {
       #intro-text {
         font-size: 1.2em;
@@ -112,7 +168,13 @@
   </style>
 </head>
 <body>
-  <header>W.E.D.I</header>
+  <header>
+    <div>
+      <img src="logo.png" alt="Logo">
+      W.E.D.I
+    </div>
+    <button id="theme-toggle">🌙</button>
+  </header>
 
   <div id="intro">
     <img id="avatar" src="avatar.jpg" alt="Avatar">
@@ -122,53 +184,66 @@
   <div id="chatbot">
     <div id="messages"></div>
     <input type="text" id="chat-input" placeholder="Ketik sesuatu...">
+    <div id="controls">
+      <button id="clear-chat">Bersihkan Chat</button>
+    </div>
   </div>
 
- <script>
-  const input = document.getElementById('chat-input');
-  const messages = document.getElementById('messages');
-  const intro = document.getElementById('intro');
+  <script>
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('messages');
+    const intro = document.getElementById('intro');
 
-  input.addEventListener('input', () => {
-    if (input.value.trim() !== "") {
-      intro.style.opacity = "0";
-      intro.style.pointerEvents = "none";
-    } else {
-      intro.style.opacity = "1";
-      intro.style.pointerEvents = "auto";
+    input.addEventListener('input', () => {
+      if (input.value.trim() !== "") {
+        intro.style.opacity = "0";
+        intro.style.pointerEvents = "none";
+      } else {
+        intro.style.opacity = "1";
+        intro.style.pointerEvents = "auto";
+      }
+    });
+
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && input.value.trim() !== "") {
+        const userMessage = input.value;
+        appendMessage(userMessage, 'user');
+        input.value = "";
+
+        fetch('http://localhost:5000/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userMessage })
+        })
+        .then(res => res.json())
+        .then(data => {
+          const botReply = data.reply || "Maaf, terjadi kesalahan.";
+          appendMessage(botReply, 'bot');
+        })
+        .catch(err => {
+          console.error(err);
+          appendMessage("Terjadi kesalahan koneksi ke server.", 'bot');
+        });
+      }
+    });
+
+    function appendMessage(text, type) {
+      const msg = document.createElement('div');
+      msg.className = 'message ' + type;
+      msg.innerText = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
     }
-  });
 
-  input.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter' && input.value.trim() !== "") {
-      const userMessage = input.value;
-      appendMessage(userMessage, 'user');
-      input.value = "";
+    document.getElementById("clear-chat").addEventListener("click", () => {
+      messages.innerHTML = "";
+    });
 
-      fetch('http://localhost:5000/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: userMessage })
-      })
-      .then(res => res.json())
-      .then(data => {
-        const botReply = data.reply || "Maaf, terjadi kesalahan.";
-        appendMessage(botReply, 'bot');
-      })
-      .catch(err => {
-        console.error(err);
-        appendMessage("Terjadi kesalahan koneksi ke server.", 'bot');
-      });
-    }
-  });
-
-  function appendMessage(text, type) {
-    const msg = document.createElement('div');
-    msg.className = 'message ' + type;
-    msg.innerText = text;
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-  }
-</script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+  </script>
+</body>
+</html>
