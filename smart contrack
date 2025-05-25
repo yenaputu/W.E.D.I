@@ -1,0 +1,10 @@
+// Smart contract sederhana untuk menyimpan pesan
+pragma solidity ^0.8.0;
+
+contract ChatContract {
+    string public lastMessage;
+
+    function sendMessage(string memory _message) public {
+        lastMessage = _message;
+    }
+}
