@@ -5,6 +5,7 @@
   <title>NovaTerm | Blockchain Terminal</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <style>
+    /* ... CSS Anda tidak berubah ... */
     body {
       margin: 0;
       background-color: #000;
@@ -19,9 +20,9 @@
     }
 
     #messages {
-      height: 60vh;
+      height: 70vh; /* Tambah tinggi sedikit */
       overflow-y: auto;
-      white-space: pre-wrap;
+      white-space: pre-wrap; /* pre-line atau pre-wrap agar \n dihormati */
       font-size: 14px;
       line-height: 1.5;
       border-bottom: 1px solid #00ff00;
@@ -29,7 +30,7 @@
     }
 
     #chat-input {
-      width: 100%;
+      width: calc(100% - 22px); /* Sesuaikan agar padding tidak overflow */
       background: black;
       color: #00ff00;
       border: none;
@@ -47,6 +48,7 @@
       margin-top: 10px;
       display: flex;
       justify-content: space-between;
+      align-items: center; /* Align items vertically */
     }
 
     button {
@@ -71,15 +73,39 @@
     .message-bot::before {
       content: "bot@block:~# ";
     }
+    .message-system { /* Style untuk pesan sistem/loading */
+        color: #FFA500; /* Oranye */
+    }
+    .message-system::before {
+      content: "system@nova:~# ";
+    }
+    .message-news {
+        color: #00FFFF; /* Cyan untuk berita */
+        white-space: pre-wrap; /* Pastikan format multiline dari berita ditampilkan benar */
+    }
+    .message-news::before {
+        content: "news@nova:~$ ";
+    }
+    .message-recom {
+        color: #FFFF00; /* Kuning untuk rekomendasi */
+        white-space: pre-wrap;
+    }
+    .message-recom::before {
+        content: "recom@nova:~$ ";
+    }
   </style>
-</head>
-<body>
+</head><body>
 
 <div class="terminal">
   <div id="messages"></div>
   <div class="controls">
-    <button id="clear-chat">clear</button>
-    <button id="toggle-mode">mode: local</button>
+    <div>
+        <button id="clear-chat">clear</button>
+        <button id="toggle-mode">mode: local</button>
+    </div>
+    <div style="font-size: 12px;">
+        Commands: 'analyze crypto', 'send [msg]', 'clear', 'help'
+    </div>
   </div>
   <input type="text" id="chat-input" placeholder="type your command and press Enter...">
 </div>
@@ -90,82 +116,186 @@
   const toggleBtn = document.getElementById('toggle-mode');
   let modeBlockchain = false;
 
+  // Alamat smart contract Anda
   const contractABI = [
     "function sendMessage(string calldata _message) external",
     "function getAllMessages() public view returns (string[] memory)"
   ];
-  const contractAddress = "0xYourContractAddressHere";
+  const contractAddress = "0xYourContractAddressHere"; // GANTI DENGAN ALAMAT KONTRAK ANDA
   let provider, signer, contract;
 
   async function connectToContract() {
-    if (window.ethereum) {
+    if (typeof window.ethereum !== 'undefined') {
       try {
+        appendMessage("Connecting to wallet...", 'system');
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         contract = new ethers.Contract(contractAddress, contractABI, signer);
+        appendMessage("Wallet connected. Contract initialized.", 'system');
         console.log("Connected to contract");
       } catch (err) {
+        appendMessage("Wallet connection failed: " + err.message, 'bot');
         console.error("Wallet connection failed:", err);
       }
     } else {
-      alert("Metamask not found.");
+      appendMessage("MetaMask not found. Blockchain mode disabled.", 'bot');
+      // Nonaktifkan mode blockchain jika tidak ada Metamask
+      toggleBtn.disabled = true;
+      toggleBtn.textContent = "mode: blockchain (unavailable)";
     }
   }
 
-  connectToContract();
+  // Panggil connectToContract saat halaman dimuat jika ingin langsung terkoneksi
+  // atau panggil saat beralih ke mode blockchain
+  // connectToContract(); // Pindah ke saat switch mode
 
-  function appendMessage(text, type) {
+  function appendMessage(text, type, isHtml = false) {
     const msg = document.createElement('div');
-    msg.className = type === 'user' ? 'message-user' : 'message-bot';
-    msg.textContent = text;
+    msg.className = `message-${type}`; // e.g., message-user, message-bot, message-system
+    if (isHtml) {
+        msg.innerHTML = text; // Untuk merender HTML jika diperlukan (hati-hati XSS jika dari user input)
+    } else {
+        msg.textContent = text;
+    }
     messages.appendChild(msg);
     messages.scrollTop = messages.scrollHeight;
   }
 
+  // Fungsi bantuan untuk menampilkan perintah yang tersedia
+  function showHelp() {
+    let helpText = "Available commands:\n";
+    helpText += "  analyze crypto          - Fetches & analyzes crypto news, provides recommendations.\n";
+    helpText += "  send <message>        - Sends a message (to local echo bot or blockchain).\n";
+    helpText += "  mode                    - Toggles between local and blockchain mode.\n";
+    helpText += "  clear                   - Clears the terminal screen.\n";
+    helpText += "  help                    - Shows this help message.";
+    appendMessage(helpText, 'system');
+  }
+
+  appendMessage("NovaTerm | Blockchain Terminal initialized. Type 'help' for commands.", "system");
+
+
   input.addEventListener("keydown", async function (event) {
     if (event.key === "Enter") {
-      const userMessage = input.value.trim();
-      if (!userMessage) return;
+      const userInput = input.value.trim();
+      if (!userInput) return;
 
-      appendMessage(userMessage, 'user');
-      input.value = "";
+      appendMessage(userInput, 'user');
+      const commandParts = userInput.toLowerCase().split(" ");
+      const command = commandParts[0];
+      const args = commandParts.slice(1).join(" ");
+      input.value = ""; // Clear input field
 
-      if (modeBlockchain) {
+      if (command === "analyze" && args === "crypto") {
+        appendMessage("Fetching and analyzing crypto news, please wait...", 'system');
         try {
-          const tx = await contract.sendMessage(userMessage);
-          await tx.wait();
-          appendMessage("sent to chain successfully.", 'bot');
-        } catch (err) {
-          appendMessage("error: blockchain tx failed", 'bot');
-        }
-      } else {
-        try {
-          const response = await fetch("http://localhost:5000/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: userMessage })
-          });
-
+          // Panggil backend Python Anda
+          // Pastikan server Python (Flask) Anda berjalan di port 5001
+          const response = await fetch("http://localhost:5001/analyze_crypto");
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({detail: "Unknown error from server"}));
+            throw new Error(`Server error: ${response.status} ${response.statusText}. ${errorData.detail || errorData.error || ''}`);
+          }
           const data = await response.json();
-          const reply = data.reply || "no response.";
-          appendMessage(reply, 'bot');
+
+          if (data.error) {
+            appendMessage(`Error from analysis server: ${data.error}`, 'bot');
+          } else {
+            if (data.news && data.news.length > 0) {
+                appendMessage("--- CRYPTO NEWS HIGHLIGHTS ---", 'system');
+                data.news.forEach(newsItem => appendMessage(newsItem, 'news'));
+            } else {
+                appendMessage("No news items to display.", 'system');
+            }
+
+            if (data.recommendations && data.recommendations.length > 0) {
+                appendMessage("\n--- COIN RECOMMENDATIONS ---", 'system');
+                data.recommendations.forEach(recItem => appendMessage(recItem, 'recom'));
+            } else {
+                appendMessage(data.message || "No recommendations available at this time.", 'system');
+            }
+          }
+
         } catch (err) {
-          appendMessage("error: localhost not responding.", 'bot');
+          appendMessage(`Error fetching crypto analysis: ${err.message}`, 'bot');
+          console.error("Error fetching crypto analysis:", err);
         }
+      } else if (command === "send") {
+        const userMessage = args;
+        if (!userMessage) {
+            appendMessage("Usage: send <your_message>", "system");
+            return;
+        }
+        if (modeBlockchain) {
+          if (!contract) {
+            appendMessage("Blockchain not connected. Please connect wallet first or check console.", 'bot');
+            await connectToContract(); // Coba konek lagi
+            if (!contract) return; // Jika masih gagal, keluar
+          }
+          appendMessage(`Sending to blockchain: "${userMessage}"...`, 'system');
+          try {
+            const tx = await contract.sendMessage(userMessage);
+            await tx.wait();
+            appendMessage("Message sent to blockchain successfully.", 'bot');
+          } catch (err) {
+            appendMessage(`Blockchain transaction failed: ${err.message || err}`, 'bot');
+            console.error("Blockchain tx error:", err);
+          }
+        } else {
+          // Mode lokal: Mengirim ke echo bot atau backend chat Anda
+          appendMessage(`Sending to local: "${userMessage}"...`, 'system');
+          try {
+            const response = await fetch("http://localhost:5000/chat", { // Ganti jika port backend chat Anda berbeda
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: userMessage })
+            });
+            if (!response.ok) throw new Error(`Local server responded with ${response.status}`);
+            const data = await response.json();
+            const reply = data.reply || "No response from local server.";
+            appendMessage(reply, 'bot');
+          } catch (err) {
+            appendMessage(`Error communicating with local server: ${err.message}. Is it running?`, 'bot');
+            console.error("Local fetch error:", err);
+          }
+        }
+      } else if (command === "clear") {
+        messages.innerHTML = "";
+      } else if (command === "mode") {
+        // Fungsi toggle mode dipanggil langsung dari button click,
+        // tapi bisa juga dipicu dari sini jika diperlukan.
+        // Untuk saat ini, biarkan button yang handle.
+        // Atau panggil click event pada button:
+        toggleBtn.click();
+      } else if (command === "help") {
+        showHelp();
+      }
+      else {
+        appendMessage("Unknown command. Type 'help' for available commands.", 'bot');
       }
     }
   });
 
   document.getElementById("clear-chat").addEventListener("click", () => {
     messages.innerHTML = "";
+    appendMessage("Terminal cleared.", "system");
   });
 
-  toggleBtn.addEventListener("click", () => {
+  toggleBtn.addEventListener("click", async () => {
     modeBlockchain = !modeBlockchain;
-    toggleBtn.textContent = modeBlockchain ? "mode: blockchain" : "mode: local";
+    if (modeBlockchain) {
+        toggleBtn.textContent = "mode: blockchain";
+        appendMessage("Switched to Blockchain mode. Connecting wallet...", "system");
+        if (!provider) { // Hanya konek jika belum ada provider/signer
+            await connectToContract();
+        } else {
+            appendMessage("Already connected to wallet.", "system");
+        }
+    } else {
+        toggleBtn.textContent = "mode: local";
+        appendMessage("Switched to Local mode.", "system");
+    }
   });
 </script>
 
