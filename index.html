@@ -242,5 +242,43 @@
       document.body.classList.toggle("dark-mode");
     });
   </script>
+const contractABI = [ /* paste ABI dari Remix di sini */ ];
+const contractAddress = "0x..."; // alamat kontrak kamu
+
+let provider, signer, contract;
+
+async function connectToContract() {
+  if (window.ethereum) {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    contract = new ethers.Contract(contractAddress, contractABI, signer);
+    console.log("Terhubung ke contract!");
+  } else {
+    alert("Metamask tidak ditemukan!");
+  }
+}
+
+connectToContract();
+
+// Saat user kirim chat:
+input.addEventListener("keydown", async function (event) {
+  if (event.key === "Enter") {
+    const userMessage = input.value.trim();
+    if (userMessage === "") return;
+
+    appendMessage(userMessage, 'user');
+    input.value = "";
+
+    try {
+      const tx = await contract.sendMessage(userMessage);
+      await tx.wait();
+      appendMessage("Pesan kamu tersimpan di blockchain!", 'bot');
+    } catch (err) {
+      console.error(err);
+      appendMessage("Gagal kirim pesan.", 'bot');
+    }
+  }
+});
 </body>
 </html>
