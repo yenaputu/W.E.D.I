@@ -2,99 +2,186 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NovaTerm | Blockchain Terminal</title>
+  <title>WEDI | Web3 Enhanced Decentralized Intelligent Terminal</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <style>
-    /* ... CSS Anda tidak berubah ... */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap'); /* Font baru */
+
+    :root {
+      --bg-color: #1a1c23; /* Sedikit lebih lembut dari hitam pekat */
+      --primary-text-color: #00ff7f; /* SpringGreen, sedikit lebih cerah */
+      --secondary-text-color: #7f8c8d; /* Warna abu-abu untuk teks sekunder */
+      --accent-color: #00e5ff; /* Cyan terang untuk aksen */
+      --error-color: #ff4757;
+      --warning-color: #ffa502; /* Oranye untuk system/warning */
+      --news-color: #54a0ff;   /* Biru untuk berita */
+      --recom-color: #feca57;  /* Kuning untuk rekomendasi */
+      --user-prompt-color: #1dd1a1; /* Warna prompt pengguna */
+      --bot-prompt-color: #48dbfb;   /* Warna prompt bot */
+      --border-color: var(--primary-text-color);
+      --input-bg-color: #2c303a;
+    }
+
     body {
       margin: 0;
-      background-color: #000;
-      color: #00ff00;
-      font-family: 'Courier New', Courier, monospace;
+      background-color: var(--bg-color);
+      color: var(--primary-text-color);
+      font-family: 'Roboto Mono', 'Courier New', Courier, monospace; /* Menggunakan font baru */
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .terminal {
-      max-width: 900px;
-      margin: auto;
-      padding: 20px;
+      max-width: 950px;
+      margin: 30px auto;
+      padding: 25px;
+      background-color: #22252e; /* Latar belakang terminal yang sedikit berbeda */
+      border: 1px solid #333740;
+      border-radius: 8px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
     #messages {
-      height: 70vh; /* Tambah tinggi sedikit */
+      height: 70vh;
       overflow-y: auto;
-      white-space: pre-wrap; /* pre-line atau pre-wrap agar \n dihormati */
-      font-size: 14px;
-      line-height: 1.5;
-      border-bottom: 1px solid #00ff00;
-      margin-bottom: 10px;
+      white-space: pre-wrap;
+      margin-bottom: 15px;
+      padding-right: 10px; /* Ruang untuk scrollbar */
+    }
+
+    /* Custom Scrollbar Styling */
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    #messages::-webkit-scrollbar-track {
+      background: var(--input-bg-color);
+      border-radius: 4px;
+    }
+    #messages::-webkit-scrollbar-thumb {
+      background-color: var(--primary-text-color);
+      border-radius: 4px;
+    }
+    #messages::-webkit-scrollbar-thumb:hover {
+      background-color: var(--accent-color);
     }
 
     #chat-input {
-      width: calc(100% - 22px); /* Sesuaikan agar padding tidak overflow */
-      background: black;
-      color: #00ff00;
-      border: none;
-      border-top: 1px solid #00ff00;
-      padding: 10px;
-      font-size: 14px;
+      width: calc(100% - 22px);
+      background: var(--input-bg-color);
+      color: var(--primary-text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      padding: 12px 10px;
+      font-size: 1em; /* Relatif terhadap font body */
       font-family: inherit;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
     }
 
     #chat-input:focus {
       outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 8px var(--accent-color);
     }
 
+    /* Blinking cursor effect (opsional, hanya visual) */
+    /* #chat-input:focus {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      50% { border-right-color: transparent; }
+    } */
+
     .controls {
-      margin-top: 10px;
+      margin-top: 15px;
       display: flex;
       justify-content: space-between;
-      align-items: center; /* Align items vertically */
+      align-items: center;
+    }
+
+    .controls .command-hint {
+        font-size: 0.85em;
+        color: var(--secondary-text-color);
     }
 
     button {
-      background-color: black;
-      color: #00ff00;
-      border: 1px solid #00ff00;
-      padding: 6px 10px;
+      background-color: var(--input-bg-color);
+      color: var(--primary-text-color);
+      border: 1px solid var(--border-color);
+      padding: 8px 15px;
       font-family: inherit;
-      font-size: 13px;
+      font-size: 0.9em;
+      border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
-      background-color: #00ff00;
-      color: black;
+      background-color: var(--primary-text-color);
+      color: var(--bg-color);
+      box-shadow: 0 0 10px var(--primary-text-color);
+    }
+    button:active {
+      transform: translateY(1px);
     }
 
+
     .message-user::before {
-      content: "user@nova:~$ ";
+      content: "user@wedi:~$ ";
+      color: var(--user-prompt-color);
+      font-weight: 500;
     }
 
     .message-bot::before {
-      content: "bot@block:~# ";
+      content: "bot@web3:~# ";
+      color: var(--bot-prompt-color);
+      font-weight: 500;
     }
-    .message-system { /* Style untuk pesan sistem/loading */
-        color: #FFA500; /* Oranye */
+    .message-bot {
+        color: var(--accent-color); /* Pesan dari bot utama juga bisa di-highlight */
+    }
+
+    .message-system {
+        color: var(--warning-color);
     }
     .message-system::before {
-      content: "system@nova:~# ";
+      content: "system@wedi:~# ";
+      font-weight: 500;
     }
+
     .message-news {
-        color: #00FFFF; /* Cyan untuk berita */
-        white-space: pre-wrap; /* Pastikan format multiline dari berita ditampilkan benar */
+        color: var(--news-color);
+        white-space: pre-wrap;
+        padding-left: 15px; /* Indentasi untuk berita */
+        border-left: 2px solid var(--news-color);
+        margin-bottom: 8px;
     }
     .message-news::before {
-        content: "news@nova:~$ ";
+        content: ""; /* Hilangkan prompt default untuk berita */
     }
+
     .message-recom {
-        color: #FFFF00; /* Kuning untuk rekomendasi */
+        color: var(--recom-color);
         white-space: pre-wrap;
+        padding-left: 15px; /* Indentasi untuk rekomendasi */
+        border-left: 2px solid var(--recom-color);
+        margin-bottom: 8px;
     }
     .message-recom::before {
-        content: "recom@nova:~$ ";
+        content: ""; /* Hilangkan prompt default untuk rekomendasi */
     }
+
+    /* Style untuk link dalam pesan */
+    .message-news a, .message-bot a {
+        color: var(--accent-color);
+        text-decoration: underline;
+    }
+    .message-news a:hover, .message-bot a:hover {
+        color: var(--primary-text-color);
+    }
+
   </style>
-</head><body>
+</head>
+<body>
 
 <div class="terminal">
   <div id="messages"></div>
@@ -103,8 +190,8 @@
         <button id="clear-chat">clear</button>
         <button id="toggle-mode">mode: local</button>
     </div>
-    <div style="font-size: 12px;">
-        Commands: 'analyze crypto', 'send [msg]', 'clear', 'help'
+    <div class="command-hint">
+        Type 'help' for commands
     </div>
   </div>
   <input type="text" id="chat-input" placeholder="type your command and press Enter...">
@@ -116,7 +203,6 @@
   const toggleBtn = document.getElementById('toggle-mode');
   let modeBlockchain = false;
 
-  // Alamat smart contract Anda
   const contractABI = [
     "function sendMessage(string calldata _message) external",
     "function getAllMessages() public view returns (string[] memory)"
@@ -140,21 +226,16 @@
       }
     } else {
       appendMessage("MetaMask not found. Blockchain mode disabled.", 'bot');
-      // Nonaktifkan mode blockchain jika tidak ada Metamask
       toggleBtn.disabled = true;
       toggleBtn.textContent = "mode: blockchain (unavailable)";
     }
   }
 
-  // Panggil connectToContract saat halaman dimuat jika ingin langsung terkoneksi
-  // atau panggil saat beralih ke mode blockchain
-  // connectToContract(); // Pindah ke saat switch mode
-
   function appendMessage(text, type, isHtml = false) {
     const msg = document.createElement('div');
-    msg.className = `message-${type}`; // e.g., message-user, message-bot, message-system
+    msg.className = `message-${type}`;
     if (isHtml) {
-        msg.innerHTML = text; // Untuk merender HTML jika diperlukan (hati-hati XSS jika dari user input)
+        msg.innerHTML = text;
     } else {
         msg.textContent = text;
     }
@@ -162,7 +243,6 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
-  // Fungsi bantuan untuk menampilkan perintah yang tersedia
   function showHelp() {
     let helpText = "Available commands:\n";
     helpText += "  analyze crypto          - Fetches & analyzes crypto news, provides recommendations.\n";
@@ -173,7 +253,8 @@
     appendMessage(helpText, 'system');
   }
 
-  appendMessage("NovaTerm | Blockchain Terminal initialized. Type 'help' for commands.", "system");
+  // Mengubah nama model di pesan selamat datang
+  appendMessage("WEDI Terminal | Web3 Enhanced Decentralized Intelligent initialized. Type 'help' for commands.", "system");
 
 
   input.addEventListener("keydown", async function (event) {
@@ -185,14 +266,12 @@
       const commandParts = userInput.toLowerCase().split(" ");
       const command = commandParts[0];
       const args = commandParts.slice(1).join(" ");
-      input.value = ""; // Clear input field
+      input.value = "";
 
       if (command === "analyze" && args === "crypto") {
         appendMessage("Fetching and analyzing crypto news, please wait...", 'system');
         try {
-          // Panggil backend Python Anda
-          // Pastikan server Python (Flask) Anda berjalan di port 5001
-          const response = await fetch("http://localhost:5001/analyze_crypto");
+          const response = await fetch("http://localhost:5001/analyze_crypto"); // Ganti jika URL backend Anda berbeda
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({detail: "Unknown error from server"}));
             throw new Error(`Server error: ${response.status} ${response.statusText}. ${errorData.detail || errorData.error || ''}`);
@@ -204,7 +283,13 @@
           } else {
             if (data.news && data.news.length > 0) {
                 appendMessage("--- CRYPTO NEWS HIGHLIGHTS ---", 'system');
-                data.news.forEach(newsItem => appendMessage(newsItem, 'news'));
+                data.news.forEach(newsItem => {
+                    // Membuat link jika ada URL
+                    let newsContent = newsItem;
+                    const urlRegex = /(https?:\/\/[^\s]+)/g;
+                    newsContent = newsContent.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+                    appendMessage(newsContent, 'news', true); // true untuk isHtml
+                });
             } else {
                 appendMessage("No news items to display.", 'system');
             }
@@ -230,8 +315,8 @@
         if (modeBlockchain) {
           if (!contract) {
             appendMessage("Blockchain not connected. Please connect wallet first or check console.", 'bot');
-            await connectToContract(); // Coba konek lagi
-            if (!contract) return; // Jika masih gagal, keluar
+            await connectToContract();
+            if (!contract) return;
           }
           appendMessage(`Sending to blockchain: "${userMessage}"...`, 'system');
           try {
@@ -243,7 +328,6 @@
             console.error("Blockchain tx error:", err);
           }
         } else {
-          // Mode lokal: Mengirim ke echo bot atau backend chat Anda
           appendMessage(`Sending to local: "${userMessage}"...`, 'system');
           try {
             const response = await fetch("http://localhost:5000/chat", { // Ganti jika port backend chat Anda berbeda
@@ -263,10 +347,6 @@
       } else if (command === "clear") {
         messages.innerHTML = "";
       } else if (command === "mode") {
-        // Fungsi toggle mode dipanggil langsung dari button click,
-        // tapi bisa juga dipicu dari sini jika diperlukan.
-        // Untuk saat ini, biarkan button yang handle.
-        // Atau panggil click event pada button:
         toggleBtn.click();
       } else if (command === "help") {
         showHelp();
@@ -287,7 +367,7 @@
     if (modeBlockchain) {
         toggleBtn.textContent = "mode: blockchain";
         appendMessage("Switched to Blockchain mode. Connecting wallet...", "system");
-        if (!provider) { // Hanya konek jika belum ada provider/signer
+        if (!provider) {
             await connectToContract();
         } else {
             appendMessage("Already connected to wallet.", "system");
