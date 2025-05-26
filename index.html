@@ -1,284 +1,189 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>W.E.D.I</title>
+  <meta charset="UTF-8">
+  <title>Chat AI with Blockchain</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    /* Gaya ringkas untuk fokus ke fungsionalitas */
     body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #fdfdfd;
-      color: #000;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      padding: 0;
     }
 
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .chat-container {
       width: 100%;
-      padding: 16px 20px;
-      font-weight: bold;
-      font-size: 1.2em;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid #e0e0e0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    header img {
-      height: 24px;
-      margin-right: 10px;
-    }
-
-    #intro {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-top: 100px;
-      transition: opacity 0.5s ease;
-    }
-
-    #avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-
-    #intro-text {
-      font-size: 1.4em;
-      font-weight: bold;
-      max-width: 80%;
-      margin-bottom: 30px;
-    }
-
-    #chatbot {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      justify-content: flex-end;
-      padding: 20px;
-      padding-top: 150px;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     #messages {
-      flex: 1;
+      height: 400px;
       overflow-y: auto;
-      margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     .message {
-      padding: 12px 16px;
-      border-radius: 20px;
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 5px;
       max-width: 70%;
-      word-wrap: break-word;
-      font-size: 0.95em;
     }
 
     .user {
-      background-color: #d1f5ff;
+      background-color: #dcf8c6;
       align-self: flex-end;
+      margin-left: auto;
     }
 
     .bot {
-      background-color: #eeeeee;
+      background-color: #ececec;
       align-self: flex-start;
+      margin-right: auto;
     }
 
     #chat-input {
-      padding: 12px 14px;
-      font-size: 1em;
       width: 100%;
-      border-radius: 25px;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      outline: none;
     }
 
-    #controls {
+    .controls {
+      margin-top: 10px;
       display: flex;
       justify-content: space-between;
-      margin-top: 10px;
     }
 
     button {
-      padding: 6px 12px;
-      border-radius: 20px;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 5px;
       border: none;
       cursor: pointer;
-      font-size: 0.9em;
     }
 
-    #clear-chat {
-      background-color: #ffdddd;
-      color: #333;
-    }
-
-    #theme-toggle {
-      background-color: #ddddff;
-      color: #333;
-    }
-
-    body.dark-mode {
-      background-color: #121212;
-      color: #ffffff;
-    }
-
-    body.dark-mode .message.user {
-      background-color: #3a3a3a;
-    }
-
-    body.dark-mode .message.bot {
-      background-color: #2a2a2a;
-    }
-
-    body.dark-mode #chat-input {
-      background-color: #2a2a2a;
-      color: #fff;
-      border: 1px solid #555;
-    }
-
-    @media screen and (max-width: 500px) {
-      #intro-text {
-        font-size: 1.2em;
-      }
-
-      #chat-input {
-        font-size: 0.95em;
-      }
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <header style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px;">
-  <img src="logo.png" alt="Logo" style="height: 30px;">
-  <h1 style="margin: 0; font-size: 20px;">W.E.D.I</h1>
-</header>
 
-  <div id="intro">
-    <img id="avatar" src="avatar.jpg" alt="Avatar">
-    <div id="intro-text">mesiliha pipis nanging sing nganake</div>
+<div class="chat-container">
+  <div id="messages"></div>
+  <div class="controls">
+    <button id="theme-toggle">Toggle Tema</button>
+    <button id="clear-chat">Bersihkan Chat</button>
+    <button id="toggle-mode">Mode: Local</button>
   </div>
+  <input type="text" id="chat-input" placeholder="Ketik pesanmu dan tekan Enter...">
+</div>
 
-  <div id="chatbot">
-    <div id="messages"></div>
-    <input type="text" id="chat-input" placeholder="Ketik sesuatu...">
-    <div id="controls">
-      <button id="clear-chat">Bersihkan Chat</button>
-    </div>
-  </div>
+<script>
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('messages');
+  const toggleBtn = document.getElementById('toggle-mode');
+  let modeBlockchain = false;
 
-  <script>
-    const input = document.getElementById('chat-input');
-    const messages = document.getElementById('messages');
-    const intro = document.getElementById('intro');
+  // Ganti ini dengan ABI dari kontrak kamu
+  const contractABI = [
+    "function sendMessage(string calldata _message) external",
+    "function getAllMessages() public view returns (string[] memory)"
+  ];
 
-    input.addEventListener('input', () => {
-      if (input.value.trim() !== "") {
-        intro.style.opacity = "0";
-        intro.style.pointerEvents = "none";
+  const contractAddress = "0xYourContractAddressHere"; // Ganti dengan alamat kontrak kamu
+  let provider, signer, contract;
+
+  async function connectToContract() {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        signer = provider.getSigner();
+        contract = new ethers.Contract(contractAddress, contractABI, signer);
+        console.log("Terkoneksi ke kontrak:", contractAddress);
+      } catch (err) {
+        console.error("Gagal konek ke wallet:", err);
+        alert("Gagal konek ke wallet.");
+      }
+    } else {
+      alert("Metamask tidak ditemukan.");
+    }
+  }
+
+  connectToContract();
+
+  function appendMessage(text, type) {
+    const msg = document.createElement('div');
+    msg.className = 'message ' + type;
+    msg.innerText = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  input.addEventListener("keydown", async function (event) {
+    if (event.key === "Enter") {
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      appendMessage(userMessage, 'user');
+      input.value = "";
+
+      if (modeBlockchain) {
+        try {
+          const tx = await contract.sendMessage(userMessage);
+          await tx.wait();
+          appendMessage("Pesan telah dikirim ke blockchain.", 'bot');
+        } catch (err) {
+          console.error("Gagal kirim ke blockchain:", err);
+          appendMessage("Gagal mengirim ke blockchain.", 'bot');
+        }
       } else {
-        intro.style.opacity = "1";
-        intro.style.pointerEvents = "auto";
+        try {
+          const response = await fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: userMessage })
+          });
+
+          const data = await response.json();
+          const reply = data.reply || "Maaf, saya tidak dapat merespons.";
+          appendMessage(reply, 'bot');
+        } catch (err) {
+          console.error("Fetch error:", err);
+          appendMessage("Server lokal tidak merespon.", 'bot');
+        }
       }
-    });
-
-    input.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter' && input.value.trim() !== "") {
-        const userMessage = input.value;
-        appendMessage(userMessage, 'user');
-        input.value = "";
-
-        fetch('http://localhost:5000/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message: userMessage })
-        })
-        .then(res => res.json())
-        .then(data => {
-          const botReply = data.reply || "Maaf, terjadi kesalahan.";
-          appendMessage(botReply, 'bot');
-        })
-        .catch(err => {
-          console.error(err);
-          appendMessage("Terjadi kesalahan koneksi ke server.", 'bot');
-        });
-      }
-    });
-
-    function appendMessage(text, type) {
-      const msg = document.createElement('div');
-      msg.className = 'message ' + type;
-      msg.innerText = text;
-      messages.appendChild(msg);
-      messages.scrollTop = messages.scrollHeight;
     }
+  });
 
-    document.getElementById("clear-chat").addEventListener("click", () => {
-      messages.innerHTML = "";
-    });
+  document.getElementById("clear-chat").addEventListener("click", () => {
+    messages.innerHTML = "";
+  });
 
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-      document.body.classList.toggle("dark-mode");
-    });
-  </script>
-const contractABI = [ /* paste ABI dari Remix di sini */ ];
-const contractAddress = "0x..."; // alamat kontrak kamu
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+  });
 
-let provider, signer, contract;
+  toggleBtn.addEventListener("click", () => {
+    modeBlockchain = !modeBlockchain;
+    toggleBtn.textContent = modeBlockchain ? "Mode: Blockchain" : "Mode: Local";
+  });
+</script>
 
-async function connectToContract() {
-  if (window.ethereum) {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-    provider = new ethers.providers.Web3Provider(window.ethereum);
-    signer = provider.getSigner();
-    contract = new ethers.Contract(contractAddress, contractABI, signer);
-    console.log("Terhubung ke contract!");
-  } else {
-    alert("Metamask tidak ditemukan!");
-  }
-}
-
-connectToContract();
-
-// Saat user kirim chat:
-input.addEventListener("keydown", async function (event) {
-  if (event.key === "Enter") {
-    const userMessage = input.value.trim();
-    if (userMessage === "") return;
-
-    appendMessage(userMessage, 'user');
-    input.value = "";
-
-    try {
-      const tx = await contract.sendMessage(userMessage);
-      await tx.wait();
-      appendMessage("Pesan kamu tersimpan di blockchain!", 'bot');
-    } catch (err) {
-      console.error(err);
-      appendMessage("Gagal kirim pesan.", 'bot');
-    }
-  }
-});
 </body>
 </html>
