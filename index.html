@@ -1,68 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Crypto Terminal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Termux AI Chatbot</title>
   <style>
     body {
-      background-color: #111;
-      color: #0f0;
-      font-family: monospace;
-      padding: 20px;
+      margin: 0;
+      background-color: #000;
+      color: #00ff00;
+      font-family: "Courier New", Courier, monospace;
     }
-    .log-line {
-      white-space: pre-wrap;
+
+    .terminal {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #111;
+      border: 2px solid #00ff00;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ff00;
+    }
+
+    .robot {
+      text-align: center;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .robot img {
+      width: 100px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    .chatbox {
+      height: 300px;
+      overflow-y: auto;
+      background: #000;
+      border: 1px solid #00ff00;
+      padding: 10px;
       margin-bottom: 10px;
+      white-space: pre-line;
+    }
+
+    .input-area {
+      display: flex;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #000;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      padding: 10px;
+      font-family: inherit;
+    }
+
+    button {
+      background: #00ff00;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #33ff33;
     }
   </style>
 </head>
 <body>
-  <div id="terminal"></div>
+  <div class="terminal">
+    <div class="robot">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Emojione_1F916.svg" alt="AI Robot"/>
+    </div>
+
+    <div class="chatbox" id="chatbox">
+      <div>> AI: Halo, aku siap membantu! Ketik sesuatu di bawah ini.</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Ketik di sini..." />
+      <button onclick="sendMessage()">Kirim</button>
+    </div>
+  </div>
 
   <script>
-    const terminal = document.getElementById('terminal');
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chatbox = document.getElementById("chatbox");
 
-    function printLog(line, delay = 500) {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          const div = document.createElement('div');
-          div.className = 'log-line';
-          div.textContent = line;
-          terminal.appendChild(div);
-          window.scrollTo(0, document.body.scrollHeight);
-          resolve();
-        }, delay);
-      });
+      if (input.value.trim() === "") return;
+
+      const userMsg = document.createElement("div");
+      userMsg.textContent = `> Kamu: ${input.value}`;
+      chatbox.appendChild(userMsg);
+
+      const aiReply = document.createElement("div");
+      aiReply.textContent = `> AI: ${generateReply(input.value)}`;
+      chatbox.appendChild(aiReply);
+
+      chatbox.scrollTop = chatbox.scrollHeight;
+      input.value = "";
     }
 
-    async function runTerminal() {
-      await printLog('🔄 Mengambil daftar coin aktif...');
-      await printLog('✅ Ditemukan 99 coin aktif di pasar');
-      await printLog('');
-      await printLog('📡 Mengambil berita terkini dari CryptoPanic (24 jam terakhir)...');
-      await printLog('📰 Ditemukan 6 berita dari CryptoPanic');
-      await printLog('');
-      await printLog('📰 Mengambil berita terkini dari CoinMarketCap...');
-      await printLog('❌ Error CoinMarketCap API: 403 Client Error');
-      await printLog('📰 Ditemukan 0 berita dari CoinMarketCap');
-      await printLog('');
-      await printLog('🧠 Menganalisis sentimen dan metrik coin dari kedua sumber...');
-      await printLog('📈 Menghasilkan rekomendasi...');
-      await printLog('');
-      await printLog('📊 HASIL ANALISIS TERKINI (2025-05-26 15:37)');
-      await printLog('============================================================');
-      await printLog('');
-      await printLog('🔥 BERITA TERKINI:');
-      await printLog('📌 [CryptoPanic] Ethereum’s Buterin: Privacy-Focused Networks Could Support National Payment Systems');
-      await printLog('⏱️ 2025-05-26T11:42:42Z | Sumber: Unknown Source | Sentimen: 🟢 Positif (0.55)');
-      await printLog('💰 Coin: Tidak ada coin spesifik');
-      await printLog('🔗 https://cryptopanic.com/news/22089994/');
-      await printLog('');
-      await printLog('🏆 REKOMENDASI COIN TERATAS:');
-      await printLog('1. XRP:\n   - Skor: 0.61\n   - Sentimen Rata-rata: -0.20\n   - Trend: ➡️ Stabil');
+    function generateReply(msg) {
+      // Kamu bisa ganti dengan AI sebenarnya nanti
+      return "Aku menerima pesanmu: " + msg;
     }
-
-    runTerminal();
   </script>
 </body>
 </html>
